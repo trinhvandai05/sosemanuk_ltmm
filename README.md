@@ -10,7 +10,10 @@ Sosemanuk là mã dòng được thiết kế để bảo vệ dữ liệu bằn
 
 ## Quá trình tìm hiểu
   <sau chèn ảnh vào>
-
+   ![Quá trình phân tích bài toán](img/1.jpg)
+   ![](img/2.jpg)
+   ![](img/3.jpg)
+   ![](img/4.jpg)
 # Phân công và báo cáo nhiệm vụ
 1. math.py
    Trịnh Văn Đại thực hiện cung cấp các hàm cần sử dụng trong từng giai đoạn ứng với quá trình tìm hiểu
