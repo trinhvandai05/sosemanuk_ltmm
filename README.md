@@ -22,10 +22,11 @@ Sosemanuk là mã dòng được thiết kế để bảo vệ dữ liệu bằn
 4. LFSR.py
    Từ 320 + 64 bit đầu ra của iv_setup trả ra s1->s4 và s5-s14
 5. FSM.py
+   Ngô Thùy Linh
    Từ 320 + 64 bit đầu ra của iv_setup trả ra f1->f4
-6. gen_key_stream.py
+7. gen_key_stream.py
    Từ đầu ra FSM.py và LFSR.py trả về key stream
-7. Folder test
+8. Folder test
    Yêu cầu thành viên nào code gì thì test trực tiếp ở đây, minh chứng cập nhật bằng file .tex
    Khi hoàn thành code yêu cầu test toàn bộ chương trình
    Tạo 2 bộ benchmark, 1 bộ do sinh viên tự tính tay 1 bộ sử dụng benchmark trên mạng
