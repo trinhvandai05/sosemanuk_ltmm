@@ -8,6 +8,11 @@ def rotl32(so, buoc):
 
 
 def sbox(chi_so, cac_tu):
+    if chi_so < 0 or chi_so > 7:
+        raise ValueError('Chi so S-box phai tu 0 den 7')
+    if len(cac_tu) != 4:
+        raise ValueError('Dau vao phai co dung 4 tu 32 bit')
+
     # 8 bang S-box cua Serpent
     cac_bang = [
         [3, 8, 15, 1, 10, 6, 5, 11, 14, 13, 4, 2, 7, 0, 9, 12],
