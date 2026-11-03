@@ -43,4 +43,17 @@ def fsm_step(R1, R2, cac_thanh_ghi):
     # Kiem tra LFSR co dung 10 thanh ghi
     if len(cac_thanh_ghi) != 10:
         raise ValueError("Can dung 10 thanh ghi LFSR")
+  # Lay cac gia tri LFSR
+    s1 = cac_thanh_ghi[1]
+    s8 = cac_thanh_ghi[8]
+    s9 = cac_thanh_ghi[9]
 
+    # Tinh R1 moi
+    R1_moi = (R2 + mux(R1, s1, s8)) & 0xFFFFFFFF
+
+    # Tinh R2 moi
+    R2_moi = trans(R1)
+      # Tinh dau ra FSM
+    f = ((s9 + R1_moi) & 0xFFFFFFFF) ^ R2_moi
+
+    return R1_moi, R2_moi, f
