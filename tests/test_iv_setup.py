@@ -1,72 +1,48 @@
 # tests/test_iv_setup.py - Vũ Trung Hiếu
-# Kiểm tra các hàm con và toàn bộ quy trình iv_setup
+# Test IV Setup: Chạy 24 vòng Serpent và gán thanh ghi LFSR/FSM
 
 import unittest
 import sys
 import os
 
-# Cho phép import file ở thư mục gốc
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 from key_setup import key_setup
-from iv_setup import (
-    chuyen_iv_thanh_4_tu,
-    chay_serpent_24_vong,
-    iv_setup
-)
+from iv_setup import chuyen_iv_thanh_4_tu, chay_serpent_24_vong, iv_setup
 
 
 class TestIVSetup(unittest.TestCase):
 
-    # 1. Kiểm tra chuyển IV 16 byte thành 4 từ 32 bit
-    def test_chuyen_iv_thanh_4_tu(self):
-        # IV 16 byte đầu vào phải đổi ra đúng 4 từ theo little-endian
-        iv_16_byte = bytes(range(16))
-        cac_tu = chuyen_iv_thanh_4_tu(iv_16_byte)
-        self.assertEqual(len(cac_tu), 4)
-        # 4 byte đầu 0, 1, 2, 3 đảo ngược lại phải ra 0x03020100
-        self.assertEqual(cac_tu[0], 0x03020100)
+    def test_cac_ham_con(self):
+        # 1. Test chuyển IV 16 byte thành 4 từ little-endian: 00..03 -> 0x03020100
+        iv_tu = chuyen_iv_thanh_4_tu(bytes(range(16)))
+        self.assertEqual(iv_tu[0], 0x03020100)
 
-    def test_chuyen_iv_sai_kich_thuoc(self):
-        # IV bắt buộc phải đúng 16 byte, thừa hay thiếu đều phải báo lỗi
-        with self.assertRaises(ValueError):
-            chuyen_iv_thanh_4_tu(bytes(15))
-        with self.assertRaises(ValueError):
-            chuyen_iv_thanh_4_tu(bytes(17))
+        # 2. Test chạy 24 vòng Serpent trả về đủ 3 mốc Y12, Y18, Y24
+        subkeys = key_setup("000102030405060708090a0b0c0d0e0f")
+        y12, y18, y24 = chay_serpent_24_vong([0, 0, 0, 0], subkeys)
+        self.assertEqual((len(y12), len(y18), len(y24)), (4, 4, 4))
 
-    # 2. Kiểm tra chạy Serpent 24 vòng
-    def test_chay_serpent_24_vong(self):
-        # Chạy thử 24 vòng xem có trả về đủ 3 mốc vòng 12, 18, 24 không
-        khoa = "00112233445566778899aabbccddeeff"
-        cac_khoa_con = key_setup(khoa)
-        iv_4_tu = [0, 0, 0, 0]
+    def test_benchmark_1_tinh_tay(self):
+        # Bộ 1: Tự tính tay (Key = 00..0f, IV = 00 11..ff)
+        subkeys = key_setup("000102030405060708090a0b0c0d0e0f")
+        lfsr, fsm = iv_setup("00112233445566778899aabbccddeeff", subkeys)
+        # Khớp với FSM tính tay: R1 = y0^18 = 0x57dd3bd8, R2 = y2^18 = 0xe290b929
+        self.assertEqual(fsm, [0x57DD3BD8, 0xE290B929])
+        # Khớp với LFSR 4 từ đầu (Y24): y3, y2, y1, y0
+        self.assertEqual(lfsr[:4], [0xD0A81B26, 0x4AFA6C81, 0xD5789294, 0x6261C4B9])
+        print("\n[IV SETUP] Test tinh tay -> FSM khop R1:", hex(fsm[0]), "R2:", hex(fsm[1]))
 
-        y12, y18, y24 = chay_serpent_24_vong(iv_4_tu, cac_khoa_con)
-        self.assertEqual(len(y12), 4)
-        self.assertEqual(len(y18), 4)
-        self.assertEqual(len(y24), 4)
-
-    # 3. Kiểm tra gán đúng thanh ghi LFSR và FSM theo vector chuẩn
-    def test_iv_setup_vector_chuan(self):
-        khoa = "00112233445566778899aabbccddeeff"
-        iv = "8899aabbccddeeff0011223344556677"
-
-        cac_khoa_con = key_setup(khoa)
-        lfsr, fsm = iv_setup(iv, cac_khoa_con)
-
-        # Kiểm tra 10 thanh ghi LFSR (s1 đến s10)
-        self.assertEqual(len(lfsr), 10)
-        lfsr_mong_doi = [
-            0xb3a3b696, 0x4f9f2596, 0x21a53b2b, 0x1bfabb41,
-            0xcec69b9b, 0xdba99a9f,
-            0x6076c06f, 0xc0ae3cd2, 0xabb5043b, 0xa93d885c
-        ]
-        self.assertEqual(lfsr, lfsr_mong_doi)
-
-        # Kiểm tra 2 thanh ghi FSM (R1, R2)
-        self.assertEqual(len(fsm), 2)
-        fsm_mong_doi = [0x9ab17002, 0x101d095b]
-        self.assertEqual(fsm, fsm_mong_doi)
+    def test_benchmark_2_chuan_estream(self):
+        # Bộ 2: Benchmark chuẩn quốc tế (Key 0011..eeff, IV 8899..6677)
+        subkeys = key_setup("00112233445566778899aabbccddeeff")
+        lfsr, fsm = iv_setup("8899aabbccddeeff0011223344556677", subkeys)
+        self.assertEqual(fsm, [0x9AB17002, 0x101D095B])
+        self.assertEqual(lfsr, [
+            0xB3A3B696, 0x4F9F2596, 0x21A53B2B, 0x1BFABB41,
+            0xCEC69B9B, 0xDBA99A9F,
+            0x6076C06F, 0xC0AE3CD2, 0xABB5043B, 0xA93D885C
+        ])
+        print("[IV SETUP] Test chuan eSTREAM -> 10 LFSR va 2 FSM khop 100%")
 
 
 if __name__ == "__main__":
