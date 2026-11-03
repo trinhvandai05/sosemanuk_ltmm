@@ -24,8 +24,10 @@ Sosemanuk là mã dòng được thiết kế để bảo vệ dữ liệu bằn
    Vũ Trung Hiếu
    Từ đầu ra của key_setup tiến hành gán thanh ghi
 4. LFSR.py
+    Nguyễn Công Hùng
    Từ 320 + 64 bit đầu ra của iv_setup trả ra s1->s4 và s5-s14
 5. FSM.py
+Nguyễn Công Hùng
    Từ 320 + 64 bit đầu ra của iv_setup trả ra f1->f4
 7. gen_key_stream.py
    Từ đầu ra FSM.py và LFSR.py trả về key stream
