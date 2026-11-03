@@ -1,4 +1,4 @@
-from smath.py import mul_alpha, div_alpha,rot132
+from smath import mul_alpha, div_alpha,rot132
 #code cho ham LFSR
 def lfsr_step(cac_thanh_ghi):
     # Kiem tra phai co dung 10 thanh ghi
