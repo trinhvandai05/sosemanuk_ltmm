@@ -11,10 +11,11 @@ def lfsr_step(cac_thanh_ghi):
 
     # Tinh gia tri thanh ghi moi
     s_moi = (
-        s_t9
-        ^ ((s_t3 << 8) & 0xFFFFFFFF)
-        ^ div_alpha(s_t3)
-        ^ mul_alpha(s_t)
+        s_moi = (
+    s_t9
+    ^ div_alpha(s_t3)
+    ^ mul_alpha(s_t)
+)
     )
 
     s_moi = s_moi & 0xFFFFFFFF
