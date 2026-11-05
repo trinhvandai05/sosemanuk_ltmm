@@ -10,13 +10,13 @@ def lfsr_step(cac_thanh_ghi):
     s9 = cac_thanh_ghi[9]
 
     # Tinh gia tri thanh ghi moi
+    
     s_moi = (
-        s_moi = (
-    s_t9
-    ^ div_alpha(s_t3)
-    ^ mul_alpha(s_t)
+    s9
+    ^ div_alpha(s3)
+    ^ mul_alpha(s0)
 )
-    )
+    
 
     s_moi = s_moi & 0xFFFFFFFF
       # Dich chuyen cac thanh ghi
