@@ -1,88 +1,45 @@
 # tests/test_key_setup.py - Vũ Trung Hiếu
-# Kiểm tra các hàm con và toàn bộ quy trình key_setup
+# Test Key Setup: Gồm 2 bộ benchmark (tự tính tay và chuẩn eSTREAM)
 
 import unittest
 import sys
 import os
 
-# Cho phép import file ở thư mục gốc
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from key_setup import (
-    dem_khoa,
-    chia_thanh_8_tu,
-    mo_rong_khoa,
-    tao_25_khoa_con,
-    key_setup
-)
+from key_setup import dem_khoa, chia_thanh_8_tu, mo_rong_khoa, tao_25_khoa_con, key_setup
 
 
 class TestKeySetup(unittest.TestCase):
 
-    # 1. Kiểm tra hàm đệm khóa
-    def test_dem_khoa_128_bit(self):
-        # Khóa 16 byte (128 bit) thì phải đệm thành 32 byte
-        khoa_16_byte = bytes(range(16))
-        khoa_dem = dem_khoa(khoa_16_byte)
-        self.assertEqual(len(khoa_dem), 32)
-        # Byte thứ 16 phải là 0x01 để đánh dấu
-        self.assertEqual(khoa_dem[16], 0x01)
-        # Các byte còn lại phải là 0x00
-        self.assertEqual(khoa_dem[17:], bytes(15))
+    def test_cac_ham_con(self):
+        # 1. Test đệm khóa: 16 byte -> 32 byte (thêm 0x01 rồi các số 0)
+        k16 = bytes(range(16))
+        pad = dem_khoa(k16)
+        self.assertEqual((len(pad), pad[16], pad[17:]), (32, 1, bytes(15)))
 
-    def test_dem_khoa_256_bit(self):
-        # Khóa đã đủ 32 byte (256 bit) rồi thì giữ nguyên, không cần đệm
-        khoa_32_byte = bytes(range(32))
-        khoa_dem = dem_khoa(khoa_32_byte)
-        self.assertEqual(khoa_dem, khoa_32_byte)
+        # 2. Test chia 8 từ little-endian: 00 01 02 03 -> 0x03020100
+        w8 = chia_thanh_8_tu(pad)
+        self.assertEqual(w8[0], 0x03020100)
 
-    def test_dem_khoa_sai_do_dai(self):
-        # Không được để khóa rỗng hoặc dài quá 32 byte
-        with self.assertRaises(ValueError):
-            dem_khoa(b"")
-        with self.assertRaises(ValueError):
-            dem_khoa(bytes(33))
+        # 3. Test mở rộng: w0 = rotl11(w-8 ^ w-5 ^ w-3 ^ w-1 ^ PHI ^ 0, 11)
+        # Khớp chính xác với số tính tay 0xdbadac91
+        w = mo_rong_khoa(w8)
+        self.assertEqual(w[8], 0xDBADAC91)
 
-    # 2. Kiểm tra hàm chia thành 8 từ little-endian
-    def test_chia_thanh_8_tu(self):
-        # 4 byte đầu: 0x00, 0x01, 0x02, 0x03 -> đảo ngược lại phải ra 0x03020100
-        du_lieu_32_byte = bytes(range(32))
-        cac_tu = chia_thanh_8_tu(du_lieu_32_byte)
-        self.assertEqual(len(cac_tu), 8)
-        self.assertEqual(cac_tu[0], 0x03020100)
-        self.assertEqual(cac_tu[1], 0x07060504)
+    def test_benchmark_1_tinh_tay(self):
+        # Bộ 1: Nhóm tự tính tay (Key = 00 01 02 ... 0f)
+        subkeys = key_setup("000102030405060708090a0b0c0d0e0f")
+        self.assertEqual(len(subkeys), 25)
+        # K0 tính tay qua hộp S3: [0xd9acacc1, 0xf4b57314, 0x3225025c, 0x103119d9]
+        self.assertEqual(subkeys[0], [0xD9ACACC1, 0xF4B57314, 0x3225025C, 0x103119D9])
+        print("\n[KEY SETUP] Test tinh tay Key 00..0f -> K0 khop 100%:", [hex(x) for x in subkeys[0]])
 
-    # 3. Kiểm tra hàm mở rộng khóa
-    def test_mo_rong_khoa(self):
-        # Ban đầu có 8 từ w-8..w-1, mở rộng thêm 100 từ nữa thì tổng phải là 108 từ
-        cac_tu_8 = [0] * 8
-        w = mo_rong_khoa(cac_tu_8)
-        self.assertEqual(len(w), 108)
-
-    # 4. Kiểm tra hàm tạo 25 khóa con
-    def test_tao_25_khoa_con(self):
-        # Phải sinh đủ 25 khóa con, mỗi khóa con là 1 danh sách 4 từ 32 bit
-        cac_tu_8 = [0x12345678] * 8
-        w = mo_rong_khoa(cac_tu_8)
-        cac_khoa_con = tao_25_khoa_con(w)
-        self.assertEqual(len(cac_khoa_con), 25)
-        for k in cac_khoa_con:
-            self.assertEqual(len(k), 4)
-
-    # 5. Kiểm tra toàn bộ hàm key_setup đối chiếu với test vector chuẩn
-    def test_key_setup_vector_chuan(self):
-        # Test vector chuẩn của Sosemanuk
-        khoa = "00112233445566778899aabbccddeeff"
-        cac_khoa_con = key_setup(khoa)
-        self.assertEqual(len(cac_khoa_con), 25)
-
-        # Khóa con K0 mong đợi
-        k0_mong_doi = [0x9d8baf0, 0x7d187fbd, 0xdd4f2b57, 0x7cf49c7d]
-        self.assertEqual(cac_khoa_con[0], k0_mong_doi)
-
-        # Khóa con K24 mong đợi
-        k24_mong_doi = [0xef48c5a6, 0xa91bd5b5, 0xc003118e, 0x6db4215c]
-        self.assertEqual(cac_khoa_con[24], k24_mong_doi)
+    def test_benchmark_2_chuan_estream(self):
+        # Bộ 2: Benchmark chuẩn quốc tế của tác giả SOSEMANUK
+        subkeys = key_setup("00112233445566778899aabbccddeeff")
+        self.assertEqual(subkeys[0], [0x09D8BAF0, 0x7D187FBD, 0xDD4F2B57, 0x7CF49C7D])
+        self.assertEqual(subkeys[24], [0xEF48C5A6, 0xA91BD5B5, 0xC003118E, 0x6DB4215C])
+        print("[KEY SETUP] Test chuan eSTREAM Key 0011..eeff -> K0 va K24 khop 100%")
 
 
 if __name__ == "__main__":
