@@ -2,14 +2,19 @@
 mô phỏng lại mã dòng sosemanuk
 
 # Thông tin nhóm
-Nhóm 9 - Trịnh Văn Đại | Vũ Trung Hiếu | Ngô Thùy Linh | Nguyễn Công Hùng | Lê Hoàng Long | Đỗ Thành Long
+Nhóm 8  
+Trịnh Văn Đại 20233298  
+Vũ Trung Hiếu 20233404  
+Ngô Thùy Linh 20233494  
+Nguyễn Công Hùng 20233426  
+Lê Hoàng Long 20233506  
+Đỗ Thành Long 20233504  
 
 # Cơ sở lý thuyết
 ## Mô tả
 Sosemanuk là mã dòng được thiết kế để bảo vệ dữ liệu bằng mật mã học. Nhận khóa bí mật key và giá trị khởi tạo iv để sinh key stream
 
 ## Quá trình tìm hiểu
-  <sau chèn ảnh vào>
    ![Quá trình phân tích bài toán](img/1.jpg)
    ![](img/2.jpg)
    ![](img/3.jpg)
@@ -29,9 +34,10 @@ Sosemanuk là mã dòng được thiết kế để bảo vệ dữ liệu bằn
 5. FSM.py
 Nguyễn Công Hùng
    Từ 320 + 64 bit đầu ra của iv_setup trả ra f1->f4
-7. gen_key_stream.py
+6. gen_key_stream.py
+   Lê Hoàng Long 
    Từ đầu ra FSM.py và LFSR.py trả về key stream
-8. Folder test
+7. Folder test
    Yêu cầu thành viên nào code gì thì test trực tiếp ở đây, minh chứng cập nhật bằng file .tex
    Khi hoàn thành code yêu cầu test toàn bộ chương trình
    Tạo 2 bộ benchmark, 1 bộ do sinh viên tự tính tay 1 bộ sử dụng benchmark trên mạng
