@@ -20,3 +20,49 @@ class TestFSM(unittest.TestCase):
             0, 3, 0, 0, 0,
             0, 0, 0, 4, 5
         ]
+             R1 = 1
+        R2 = 2
+
+        # Ket qua mong doi
+        R1_mong_doi = 0x9
+        R2_mong_doi = 0x328983AA
+        f_mong_doi = 0x328983A4
+
+        # Chay ham FSM
+        R1_thuc_te, R2_thuc_te, f_thuc_te = fsm_step(
+            R1, R2, cac_thanh_ghi
+        )
+
+        # Kiem tra ket qua
+        self.assertEqual(R1_thuc_te, R1_mong_doi)
+        self.assertEqual(R2_thuc_te, R2_mong_doi)
+        self.assertEqual(f_thuc_te, f_mong_doi)
+            # Kiem tra khi bit cuoi cua R1 bang 0
+    def test_fsm_bit_0(self):
+
+        cac_thanh_ghi = [
+            0, 3, 0, 0, 0,
+            0, 0, 0, 4, 5
+        ]
+
+        R1 = 2
+        R2 = 2
+
+        # Ket qua mong doi
+        R1_mong_doi = 0x5
+        R2_mong_doi = 0x65330754
+        f_mong_doi = 0x6533075E
+
+        # Chay ham FSM
+        R1_thuc_te, R2_thuc_te, f_thuc_te = fsm_step(
+            R1, R2, cac_thanh_ghi
+        )
+
+        # Kiem tra ket qua
+        self.assertEqual(R1_thuc_te, R1_mong_doi)
+        self.assertEqual(R2_thuc_te, R2_mong_doi)
+        self.assertEqual(f_thuc_te, f_mong_doi)
+
+
+if __name__ == "__main__":
+    unittest.main()
