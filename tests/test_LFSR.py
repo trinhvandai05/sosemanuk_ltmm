@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Them thu muc cha vao duong dan tim kiem module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from LFSR import lfsr_stepfrom LFSR import lfsr_step
+from LFSR import lfsr_step
 print("========== TEST LFSR ==========")
 
 # 10 thanh ghi ban dau
