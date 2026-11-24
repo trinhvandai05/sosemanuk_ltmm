@@ -3,12 +3,16 @@
 import unittest
 from aes_tables import S_BOX, INV_S_BOX, RCON, nhandathuc
 from aes import (
+    add_round_key,
     ma_hoa_aes_128,
     giai_ma_aes_128,
     mix_columns,
     inv_mix_columns,
     bytes_sang_state,
-    state_sang_bytes
+    mo_rong_khoa,
+    shift_rows,
+    state_sang_bytes,
+    sub_bytes
 )
 
 
@@ -89,6 +93,37 @@ class TestAES128(unittest.TestCase):
 
         ban_ma = ma_hoa_aes_128(ban_ro, khoa)
         self.assertEqual(ban_ma.lower(), ban_ma_chuan.lower())
+
+    def test_vong_1(self):
+        from aes import (
+        mo_rong_khoa, sub_bytes,
+        shift_rows, add_round_key
+    )
+
+        p = "00000000000000000000000000000011"
+        k = "00000000000000000000000000000000"
+
+        keys = mo_rong_khoa(list(bytes.fromhex(k)))
+        state = bytes_sang_state(list(bytes.fromhex(p)))
+
+        def to_hex(s):
+            return bytes(state_sang_bytes(s)).hex()
+
+        self.assertEqual(
+            to_hex(keys[1]),
+            "62636363626363636263636362636363"
+        )
+
+        add_round_key(state, keys[0])
+        sub_bytes(state)
+        shift_rows(state)
+        mix_columns(state)
+        add_round_key(state, keys[1])
+
+        self.assertEqual(
+            to_hex(state),
+            "e0e138d9010000000100000001000000"
+        )
 
 
 if __name__ == "__main__":
